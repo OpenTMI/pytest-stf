@@ -60,6 +60,10 @@ def pytest_unconfigure(config):
 
 @pytest.fixture(name="selected_phone", scope="session")
 def fixture_selected_phone(pytestconfig):
+    """
+    Allocate required phone, create ADB tunnel to phone via STF and start appium server for tests.
+    Yields tuple (device: dict, adb: AdbServer, appium: Appium)
+    """
     assert hasattr(pytestconfig, '_openstf'), 'stf_host or stf_token missing'
 
     stf = pytestconfig._openstf  # pylint: disable=protected-access

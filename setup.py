@@ -19,7 +19,10 @@ setup(
     packages=["pytest_stf"],
     entry_points={"pytest11": ["stf = pytest_stf.plugin"]},
     setup_requires=["setuptools_scm"],
-    install_requires=["pytest>=5.0", "pytest-metadata", "stf-appium-client"],
+    install_requires=[
+        "pytest>=5.0",
+        "pytest-metadata",
+        "stf-appium-client==0.7.0"],
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"
     # syntax, for example:
@@ -29,13 +32,13 @@ setup(
     # Similar to `install_requires` above, these must be valid existing
     # projects.
     extras_require={  # Optional
-        'dev': ['coverage', 'coveralls', 'mock', 'pylint', 'nose', 'pyinstaller']
+        'dev': ['coverage', 'coveralls', 'mock', 'pylint', 'pyinstaller']
     },
     license="Mozilla Public License 2.0 (MPL 2.0)",
     keywords="py.test pytest openstf android phone",
-    python_requires=">=3.7",
+    python_requires=">=3.9",
     classifiers=[
-        "Development Status :: 5 - Production/Stable",
+        # "Development Status :: 5 - Production/Stable",
         "Framework :: Pytest",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
