@@ -32,7 +32,7 @@ setup(
     # Similar to `install_requires` above, these must be valid existing
     # projects.
     extras_require={  # Optional
-        'dev': ['coverage', 'coveralls', 'mock', 'flake8', 'pylint', 'pyinstaller']
+        'dev': ['pytest-cov', 'mock', 'flake8', 'pylint', 'pyinstaller']
     },
     license="Mozilla Public License 2.0 (MPL 2.0)",
     keywords="py.test pytest openstf android phone",
