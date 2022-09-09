@@ -23,10 +23,11 @@ def test_plugin(pytester: Pytester, example):
          mock.patch('stf_appium_client.Appium.start') as appium_start, \
          mock.patch('stf_appium_client.Appium.stop') as appium_stop, \
          mock.patch('stf_appium_client.Appium.get_wd_hub_uri') as get_url:
-            allocation_context.return_value.__enter__.return_value = {
+
+         allocation_context.return_value.__enter__.return_value = {
                 "platform": "Android",
                 "remote_adb_url": "localhost"}
-            result = pytester.runpytest('--stf_host=.', '--stf_token=abc', '--phone_requirements=platform=Android')
+         result = pytester.runpytest('--stf_host=.', '--stf_token=abc', '--phone_requirements=platform=Android')
 
     connect.assert_called_once_with('abc')
     allocation_context.assert_called_once_with({'platform': 'Android'}, timeout_seconds=10)
@@ -36,4 +37,3 @@ def test_plugin(pytester: Pytester, example):
 
     # check that all test passed
     result.assert_outcomes(passed=1)
-

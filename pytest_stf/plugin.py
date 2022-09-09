@@ -44,7 +44,7 @@ def pytest_configure(config):
     token = config.getoption("stf_token")
     if host and token:
         config._openstf = StfClient(host)  # pylint: disable=protected-access
-        config._openstf.connect(token)
+        config._openstf.connect(token)  # pylint: disable=protected-access
 
 
 def pytest_unconfigure(config):
