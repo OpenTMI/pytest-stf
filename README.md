@@ -1,3 +1,6 @@
+[![pytest-stf](https://github.com/OpenTMI/pytest-stf/actions/workflows/test.yml/badge.svg)](https://github.com/OpenTMI/pytest-stf/actions/workflows/test.yml) [![PyPI version](https://badge.fury.io/py/pytest-stf.svg)](https://pypi.org/project/pytest-stf/)
+
+
 ## pytest plugin for OpenSTF
 
 Plugin for simplify [OpenSTF](https://github.com/DeviceFarmer/stf) usage with pytest 
