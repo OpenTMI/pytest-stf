@@ -12,8 +12,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-        pull-requests: write
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python 3.9
@@ -36,8 +34,8 @@ jobs:
       run: |
           pytest --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=pytest_stf test/ | tee pytest-coverage.txt
 
-    - name: Pytest coverage comment
-      uses: MishaKav/pytest-coverage-comment@main
+    - name: Publish package
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+      uses: pypa/gh-action-pypi-publish@release/v1
       with:
-        pytest-coverage-path: ./pytest-coverage.txt
-        junitxml-path: ./pytest.xml
+        password: ${{ secrets.PYPI_API_TOKEN }}
