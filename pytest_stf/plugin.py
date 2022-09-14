@@ -4,6 +4,7 @@ from stf_appium_client import StfClient
 from stf_appium_client.tools import parse_requirements
 from stf_appium_client.AdbServer import AdbServer
 from stf_appium_client.Appium import Appium
+from appium.webdriver.webdriver import WebDriver
 
 
 def pytest_addoption(parser):
@@ -31,6 +32,10 @@ def pytest_addoption(parser):
         "--stf_allocation_timeout",
         default=1000,
         help="Allocation timeout",
+    )
+    group.addoption(
+        "--appium_capabilities",
+        help="Appium capabilities"
     )
 
 
@@ -115,17 +120,25 @@ def fixture_appium_server(phone_with_adb):
         yield appium, adb, phone
 
 
-@pytest.fixture(name='capabilities')
+@pytest.fixture(name='capabilities', scope='session')
 def fixture_capabilities(pytestconfig, allocated_phone):
     capabilities = {
-        "platformName": allocated_phone['platform'],
-        'udid': allocated_phone['serial'],
+        'platformName': allocated_phone['platform'],
+        'udid': '', #allocated_phone['serial'],
+        'automationName': 'UiAutomator2',
+        'browserName': 'Chrome',
     }
+    extra_capabilities = pytestconfig.getoption('appium_capabilities')
+    if extra_capabilities:
+        extra_capabilities = parse_requirements(extra_capabilities)
+        capabilities.update(extra_capabilities)
     yield capabilities
 
 @pytest.fixture(name="appium_client", scope="session")
 def fixture_appium_client(appium_server, capabilities):
-    yield appium, adb, phone
+    appium, adb, phone = appium_server
+    driver = WebDriver(command_executor=f'http://127.0.0.1:{appium.port}', desired_capabilities=capabilities)
+    yield driver, appium, adb, phone
 
 
 @pytest.fixture(name="selected_phone", scope="session")
