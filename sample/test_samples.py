@@ -1,3 +1,4 @@
+import pytest
 from appium.webdriver.webdriver import WebDriver
 
 from stf_appium_client import AppiumServer, AdbServer
@@ -23,16 +24,43 @@ def test_appium(appium_server):
     print(f'wd_hub: {appium.get_api_path()}')
 
 
+@pytest.fixture(scope='session')
+def fixture_capabilities(pytestconfig):
+    values = pytestconfig.getoption('appium_capabilities')
+
+
+@pytest.fixture(name='appium_args', scope='session')
+def fixture_appium_args():
+    # overridable list of appium server args
+    # https://appium.io/docs/en/writing-running-appium/server-args/
+    return []
+
+
+@pytest.fixture(name='capabilities', scope='session')
+def fixture_capabilities(pytestconfig, allocated_phone):
+    # Allows to overwrite WebDriver arguments
+    # Under the hoods these are used like `WebDriver(**kwargs)`
+    kwargs = {
+        "desired_capabilities": {
+            'platformName': allocated_phone['platform'],
+            #'udid': '', #allocated_phone['serial'],
+            'automationName': 'UiAutomator2',
+            'browserName': 'Chrome',
+        }
+    }
+    yield kwargs
+
+
 def test_client(appium_client):
     # allocated phone with adb+appium server + appium client (WebDriver)
-    client, appium, adb, phone = appium_client
+    driver, appium, adb, phone = appium_client
 
     # adb: AdbServer instance, that is already connected
     # appium: AppiumServer instance that provide server address for appium client
     #
-    client: WebDriver
+    driver: WebDriver
     test_url = 'https://google.com'
 
-    client.get(test_url)
-    url = client.current_url
+    driver.get(test_url)
+    url = driver.current_url
     assert url == test_url, 'Wrong URL'

@@ -110,34 +110,39 @@ def fixture_phone_with_adb(allocated_phone):
         yield adb, allocated_phone
 
 
+@pytest.fixture(name='appium_args', scope='session')
+def fixture_appium_args():
+    # overridable list of appium server args
+    return []
+
 @pytest.fixture(name="appium_server", scope="session")
-def fixture_appium_server(phone_with_adb):
+def fixture_appium_server(phone_with_adb, appium_args):
     """
     Allocate required phone, create ADB tunnel to phone via STF and start appium server for tests.
     Yields tuple (appium: Appium, adb: AdbServer, device: dict )
     """
     adb, phone = phone_with_adb
-    with AppiumServer() as appium:
+    with AppiumServer(appium_args) as appium:
         yield appium, adb, phone
 
 
 @pytest.fixture(name='capabilities', scope='session')
 def fixture_capabilities(pytestconfig, allocated_phone):
-    capabilities = {
-        'platformName': allocated_phone['platform'],
-        'udid': '', #allocated_phone['serial'],
-        'automationName': 'UiAutomator2',
-        'browserName': 'Chrome',
+    kwargs = {
+        "desired_capabilities": {
+            'platformName': allocated_phone['platform']
+        }
     }
     extra_capabilities = pytestconfig.getoption('appium_capabilities')
     if extra_capabilities:
         extra_capabilities = parse_requirements(extra_capabilities)
-        capabilities.update(extra_capabilities)
-    yield capabilities
+        kwargs['desired_capabilities'].update(extra_capabilities)
+    yield kwargs
 
 
 @pytest.fixture(name="appium_client", scope="session")
 def fixture_appium_client(appium_server, capabilities):
     appium, adb, phone = appium_server
-    driver = WebDriver(command_executor=f'http://127.0.0.1:{appium.port}', desired_capabilities=capabilities)
-    yield driver, appium, adb, phone
+    client = AppiumClient(command_executor=appium.get_api_path(), **capabilities)
+    with client as driver:
+        yield driver, appium, adb, phone
