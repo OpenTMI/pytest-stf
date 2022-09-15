@@ -59,7 +59,7 @@ def test_client(appium_client):
     # appium: AppiumServer instance that provide server address for appium client
     #
     driver: WebDriver
-    test_url = 'https://google.com'
+    test_url = 'https://www.google.com/'
 
     driver.get(test_url)
     url = driver.current_url
