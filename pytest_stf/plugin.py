@@ -3,7 +3,8 @@ import pytest
 from stf_appium_client import StfClient
 from stf_appium_client.tools import parse_requirements
 from stf_appium_client.AdbServer import AdbServer
-from stf_appium_client.Appium import Appium
+from stf_appium_client.AppiumServer import AppiumServer
+from stf_appium_client.AppiumClient import AppiumClient
 from appium.webdriver.webdriver import WebDriver
 
 
@@ -106,7 +107,7 @@ def fixture_phone_with_adb(allocated_phone):
     Yields tuple (adb: AdbServer, device: dict)
     """
     with AdbServer(allocated_phone['remote_adb_url']) as adb:
-        yield allocated_phone, adb
+        yield adb, allocated_phone
 
 
 @pytest.fixture(name="appium_server", scope="session")
@@ -115,8 +116,8 @@ def fixture_appium_server(phone_with_adb):
     Allocate required phone, create ADB tunnel to phone via STF and start appium server for tests.
     Yields tuple (appium: Appium, adb: AdbServer, device: dict )
     """
-    phone, adb = phone_with_adb
-    with Appium() as appium:
+    adb, phone = phone_with_adb
+    with AppiumServer() as appium:
         yield appium, adb, phone
 
 
@@ -134,18 +135,9 @@ def fixture_capabilities(pytestconfig, allocated_phone):
         capabilities.update(extra_capabilities)
     yield capabilities
 
+
 @pytest.fixture(name="appium_client", scope="session")
 def fixture_appium_client(appium_server, capabilities):
     appium, adb, phone = appium_server
     driver = WebDriver(command_executor=f'http://127.0.0.1:{appium.port}', desired_capabilities=capabilities)
     yield driver, appium, adb, phone
-
-
-@pytest.fixture(name="selected_phone", scope="session")
-def fixture_selected_phone(appium_server):
-    """
-    Alternative for appium_server -fixture except tuple is in different order:
-    (device, adb, appium)
-    """
-    appium, adb, device = appium_server
-    yield device, adb, appium

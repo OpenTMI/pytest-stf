@@ -1,28 +1,38 @@
-from time import sleep
-from appium import webdriver
-from appium.options.android import UiAutomator2Options
+from appium.webdriver.webdriver import WebDriver
+
+from stf_appium_client import AppiumServer, AdbServer
+
+
+def test_allocated_phone(allocated_phone: dict):
+    # allocated_phone is dictionary of phone metadata
+    print(allocated_phone)
+
 
 def test_adb(phone_with_adb):
-    phone, adb = phone_with_adb
-    print(phone)
-    sleep(100)
+    # allocated phone with adb proxy
+    adb, phone = phone_with_adb
+    adb: AdbServer
+    response = adb._execute('shell getprop ro.build.version.release', 10)
+    assert response.stdout == phone.get('version'), 'Wrong Android version'
 
 
 def test_appium(appium_server):
+    # allocated phone with adb and appium server
     appium, adb, phone = appium_server
-    print(phone)
-    #print(adb._execute('devices'))
-    print(f'wd_hub: {appium.get_wd_hub_uri()}')
+    appium: AppiumServer
+    print(f'wd_hub: {appium.get_api_path()}')
 
 
-    options = UiAutomator2Options()
-    options.platform_name = phone['platform']
-    options.platform_Version = phone['version']
-    #options.udid = phone['serial']
-    options.set_capability("browser_name", "Browser")
-    driver = webdriver.Remote(appium.get_wd_hub_uri(), options=options)
+def test_client(appium_client):
+    # allocated phone with adb+appium server + appium client (WebDriver)
+    client, appium, adb, phone = appium_client
 
-    print(driver)
+    # adb: AdbServer instance, that is already connected
+    # appium: AppiumServer instance that provide server address for appium client
+    #
+    client: WebDriver
+    test_url = 'https://google.com'
 
-    driver.quit()
-
+    client.get(test_url)
+    url = client.current_url
+    assert url == test_url, 'Wrong URL'

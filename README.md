@@ -37,15 +37,27 @@ prepare remote adb connection and starts appium server that tests could utilize 
 ## Usage example
 
 Test script: sample.py
+
 ```python
-def test_create(selected_phone):
-    device, adb, appium = selected_phone
+
+from appium.webdriver.webdriver import WebDriver
+
+
+def test_create(appium_client):
+    client, appium, adb, phone = appium_client
     # device is dictionary of device metadata
     # adb: AdbServer instance, that is already connected
     # appium: AppiumServer instance that provide server address for appium client
-    print(device)
-    print(f'wd_hub: {appium.get_wd_hub_uri()}')
+    print(phone)
+    print(f'wd_hub: {appium.get_api_path()}')
     
+    client: WebDriver
+    client, *_ = appium_client
+    URL = 'https://google.com'
+    client.get(URL)
+    url = client.current_url
+    assert url == URL, 'Wrong URL'
+
 ```
 
 Execution
