@@ -64,3 +64,8 @@ Execution
 ```
 > pytest sample/test_samples.py --stf_host localhost --stf_token $TOKEN --phone_requirements platform=Android
 ```
+
+custom capabilities:
+```
+> pytest --appium_capabilities cab=val1&cab=val2
+```

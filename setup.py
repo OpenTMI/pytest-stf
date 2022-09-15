@@ -22,7 +22,7 @@ setup(
     install_requires=[
         "pytest>=5.0",
         "pytest-metadata",
-        "stf-appium-client==0.7.0"],
+        "stf-appium-client==0.8.0"],
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"
     # syntax, for example:
