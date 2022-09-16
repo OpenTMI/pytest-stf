@@ -57,13 +57,15 @@ def test_create(appium_client):
     client.get(URL)
     url = client.current_url
     assert url == URL, 'Wrong URL'
-
 ```
 
 Execution
 ```
 > pytest sample/test_samples.py --stf_host localhost --stf_token $TOKEN --phone_requirements platform=Android
 ```
+
+
+See more examples from [sample/test_samples.py](sample/test_samples.py).
 
 custom capabilities:
 ```
