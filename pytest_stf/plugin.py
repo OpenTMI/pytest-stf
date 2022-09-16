@@ -1,6 +1,6 @@
 import os
 import pytest
-from stf_appium_client import StfClient
+from stf_appium_client.StfClient import StfClient
 from stf_appium_client.tools import parse_requirements
 from stf_appium_client.AdbServer import AdbServer
 from stf_appium_client.AppiumServer import AppiumServer
@@ -145,4 +145,5 @@ def fixture_appium_client(appium_server, capabilities):
     appium, adb, phone = appium_server
     client = AppiumClient(command_executor=appium.get_api_path(), **capabilities)
     with client as driver:
+        driver: WebDriver
         yield driver, appium, adb, phone
