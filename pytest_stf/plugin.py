@@ -1,9 +1,11 @@
 import os
 import pytest
-from stf_appium_client import StfClient
+from stf_appium_client.StfClient import StfClient
 from stf_appium_client.tools import parse_requirements
 from stf_appium_client.AdbServer import AdbServer
-from stf_appium_client.Appium import Appium
+from stf_appium_client.AppiumServer import AppiumServer
+from stf_appium_client.AppiumClient import AppiumClient
+from appium.webdriver.webdriver import WebDriver
 
 
 def pytest_addoption(parser):
@@ -29,8 +31,12 @@ def pytest_addoption(parser):
     )
     group.addoption(
         "--stf_allocation_timeout",
-        default=10,
+        default=1000,
         help="Allocation timeout",
+    )
+    group.addoption(
+        "--appium_capabilities",
+        help="Appium capabilities"
     )
 
 
@@ -58,11 +64,28 @@ def pytest_unconfigure(config):
         del config._openstf  # pylint: disable=protected-access
 
 
-@pytest.fixture(name="selected_phone", scope="session")
-def fixture_selected_phone(pytestconfig):
+@pytest.fixture(name='allocated_phone', scope="session")
+def fixture_allocated_phone(pytestconfig):
     """
-    Allocate required phone, create ADB tunnel to phone via STF and start appium server for tests.
-    Yields tuple (device: dict, adb: AdbServer, appium: Appium)
+    Allocate required phone via STF.
+    Yields device details as dict.
+    e.g.
+    {
+        "abi": "arm64-v8a",
+        "airplaneMode": false,
+        "battery": {...},
+        "browser": {...},
+        "cpuPlatform": "...",
+        "manufacturer": "...",
+        "marketName": "Pixel 4",
+        "model": "Pixel 4",
+        "network": {...},
+        "platform": "Android",
+        "sdk": "32",
+        "serial": "...",
+        "version": "12",
+        ...
+    }
     """
     assert hasattr(pytestconfig, '_openstf'), 'stf_host or stf_token missing'
 
@@ -74,6 +97,53 @@ def fixture_selected_phone(pytestconfig):
     requirements = parse_requirements(requirements)
 
     with stf.allocation_context(requirements, timeout_seconds=timeout) as device:
-        with AdbServer(device['remote_adb_url']) as adb:
-            with Appium() as appium:
-                yield device, adb, appium
+        yield device
+
+
+@pytest.fixture(name='phone_with_adb', scope="session")
+def fixture_phone_with_adb(allocated_phone):
+    """
+    Allocate required phone and create ADB tunnel to phone via STF.
+    Yields tuple (adb: AdbServer, device: dict)
+    """
+    with AdbServer(allocated_phone['remote_adb_url']) as adb:
+        yield adb, allocated_phone
+
+
+@pytest.fixture(name='appium_args', scope='session')
+def fixture_appium_args():
+    # overridable list of appium server args
+    return []
+
+@pytest.fixture(name="appium_server", scope="session")
+def fixture_appium_server(phone_with_adb, appium_args):
+    """
+    Allocate required phone, create ADB tunnel to phone via STF and start appium server for tests.
+    Yields tuple (appium: Appium, adb: AdbServer, device: dict )
+    """
+    adb, phone = phone_with_adb
+    with AppiumServer(appium_args) as appium:
+        yield appium, adb, phone
+
+
+@pytest.fixture(name='capabilities', scope='session')
+def fixture_capabilities(pytestconfig, allocated_phone):
+    kwargs = {
+        "desired_capabilities": {
+            'platformName': allocated_phone['platform']
+        }
+    }
+    extra_capabilities = pytestconfig.getoption('appium_capabilities')
+    if extra_capabilities:
+        extra_capabilities = parse_requirements(extra_capabilities)
+        kwargs['desired_capabilities'].update(extra_capabilities)
+    yield kwargs
+
+
+@pytest.fixture(name="appium_client", scope="session")
+def fixture_appium_client(appium_server, capabilities):
+    appium, adb, phone = appium_server
+    client = AppiumClient(command_executor=appium.get_api_path(), **capabilities)
+    with client as driver:
+        driver: WebDriver
+        yield driver, appium, adb, phone
