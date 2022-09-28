@@ -18,12 +18,12 @@ def pytest_addoption(parser):
     group.addoption(
         "--stf_host",
         default=os.environ.get('OPENSTF_HOST', None),
-        help="Openstf host",
+        help="OpenSTF host",
     )
     group.addoption(
         "--stf_token",
         default=os.environ.get('OPENSTF_TOKEN', None),
-        help="Openstf access token",
+        help="OpenSTF access token",
     )
     group.addoption(
         "--phone_requirements",
@@ -32,7 +32,7 @@ def pytest_addoption(parser):
     group.addoption(
         "--stf_allocation_timeout",
         default=1000,
-        help="Allocation timeout",
+        help="Maximum time in seconds after which STF releases allocated devices",
     )
     group.addoption(
         "--appium_server",
@@ -56,6 +56,8 @@ def pytest_configure(config):
     if host and token:
         config._openstf = StfClient(host)  # pylint: disable=protected-access
         config._openstf.connect(token)  # pylint: disable=protected-access
+        # set allocation resource list file to None when using OpenSTF
+        config.option.allocation_resource_list_file = None
 
 
 def pytest_unconfigure(config):
