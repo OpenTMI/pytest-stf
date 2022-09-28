@@ -43,6 +43,10 @@ def pytest_addoption(parser):
         "--appium_capabilities",
         help="Appium capabilities"
     )
+    group.addoption(
+        "--appium_logs",
+        help="Appium server log file path"
+    )
 
 
 def pytest_configure(config):
@@ -128,9 +132,13 @@ def fixture_phone_with_adb(pytestconfig, allocated_phone):
 
 
 @pytest.fixture(name='appium_args', scope='session')
-def fixture_appium_args():
+def fixture_appium_args(pytestconfig):
     # overridable list of appium server args
-    return []
+    args = []
+    logs_file = pytestconfig.getoption('appium_logs')
+    if logs_file:
+        args.extend(['--log', logs_file])
+    return args
 
 
 @pytest.fixture(name="appium_server", scope="session")
