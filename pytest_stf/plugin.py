@@ -57,7 +57,8 @@ def pytest_configure(config):
         config._openstf = StfClient(host)  # pylint: disable=protected-access
         config._openstf.connect(token)  # pylint: disable=protected-access
         # set allocation resource list file to None when using OpenSTF
-        config.option.allocation_resource_list_file = None
+        if not config.option.allocation_requirements:
+            config.option.allocation_resource_list_file = None
 
 
 def pytest_unconfigure(config):
@@ -74,7 +75,7 @@ def pytest_unconfigure(config):
 @pytest.fixture(name='allocated_phone', scope="session")
 def fixture_allocated_phone(pytestconfig, lockable):
     """
-    Allocate required phone via STF.
+    1) Allocate a required phone via STF or lockable
     Yields device details as dict.
     e.g.
     {
@@ -115,7 +116,8 @@ def fixture_allocated_phone(pytestconfig, lockable):
 @pytest.fixture(name='phone_with_adb', scope="session")
 def fixture_phone_with_adb(pytestconfig, allocated_phone):
     """
-    Allocate required phone and create ADB tunnel to phone via STF.
+    1) Allocate a required phone via STF or lockable
+    2) Create an ADB tunnel to phone if using STF
     Yields tuple (adb: AdbServer, device: dict)
     """
     if hasattr(pytestconfig, '_openstf'):
@@ -130,18 +132,23 @@ def fixture_appium_args():
     # overridable list of appium server args
     return []
 
+
 @pytest.fixture(name="appium_server", scope="session")
 def fixture_appium_server(pytestconfig, phone_with_adb, appium_args):
     """
-    Allocate required phone, create ADB tunnel to phone via STF and start appium server for tests.
-    Yields tuple (appium: Appium, adb: AdbServer, device: dict )
+    1) Allocate a required phone via STF or lockable
+    2) Create an ADB tunnel to phone if using STF
+    3) Start Appium server or use remote one if requested
+    Yields tuple (appium: AppiumServer|RemoteAppiumServer, adb: AdbServer, device: dict )
     """
     adb, phone = phone_with_adb
     if adb:
         with AppiumServer(appium_args) as appium:
             yield appium, adb, phone
     else:
-        appium_api_path = phone.get('appium_server') or pytestconfig.getoption('appium_server')
+        appium_api_path = phone.get(
+            'appium_server') or pytestconfig.getoption('appium_server')
+
         class RemoteAppiumServer:
             def get_api_path(self):
                 return appium_api_path
@@ -150,6 +157,11 @@ def fixture_appium_server(pytestconfig, phone_with_adb, appium_args):
 
 @pytest.fixture(name='capabilities', scope='session')
 def fixture_capabilities(pytestconfig, allocated_phone):
+    """
+    Arguments passed to Appium client which tests can override with own fixture.
+    By default simply contains a desired capability for device platform.
+    Yields appium webdriver kwargs as dict.
+    """
     kwargs = {
         "desired_capabilities": {
             'platformName': allocated_phone['platform']
@@ -164,8 +176,16 @@ def fixture_capabilities(pytestconfig, allocated_phone):
 
 @pytest.fixture(name="appium_client", scope="session")
 def fixture_appium_client(appium_server, capabilities):
+    """
+    1) Allocate a required phone via STF or lockable
+    2) Create an ADB tunnel to phone if using STF
+    3) Start Appium server or use remote one if requested
+    4) Start Appium webdriver client
+    Yields tuple (driver: WebDriver, appium: AppiumServer|RemoteAppiumServer, adb: AdbServer, device: dict)
+    """
     appium, adb, phone = appium_server
-    client = AppiumClient(command_executor=appium.get_api_path(), **capabilities)
+    client = AppiumClient(
+        command_executor=appium.get_api_path(), **capabilities)
     with client as driver:
         driver: WebDriver
         yield driver, appium, adb, phone
