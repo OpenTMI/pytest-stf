@@ -103,16 +103,19 @@ def fixture_allocated_phone(pytestconfig, lockable):
     assert requirements, 'phone_requirements required'
     assert 'platform' in requirements, 'platform required'
 
+    allocation_timeout = pytestconfig.getoption('allocation_timeout') or 0
+
     if hasattr(pytestconfig, '_openstf'):
         stf = pytestconfig._openstf  # pylint: disable=protected-access
         stf  # type=StfClient
         timeout = pytestconfig.getoption('stf_allocation_timeout')
         requirements = parse_requirements(requirements)
 
-        with stf.allocation_context(requirements, timeout_seconds=timeout) as device:
+        with stf.allocation_context(requirements,
+                                    wait_timeout=allocation_timeout,
+                                    timeout_seconds=timeout) as device:
             yield device
     else:
-        allocation_timeout = pytestconfig.getoption('allocation_timeout') or 0
         with lockable.auto_lock(requirements, allocation_timeout) as device:
             yield device
 
