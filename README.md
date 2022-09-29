@@ -110,3 +110,29 @@ Custom capabilities:
 ```
 > pytest --appium_capabilities cab=val1&cab=val2
 ```
+
+### Usage with local devices
+
+Testing with a local device you can omit `--stf_host` and `--stf_token` cli arguments and use lockable resources file (defaults to `resources.json`).
+
+`resources.json` example:
+```
+[
+  {
+    "id": "1",
+    "type": "Phone",
+    "platform": "Android",
+    "online": true,
+    "hostname": <HOSTNAME>,
+    "version": "12",
+    "appium_server": "http://localhost:4723"
+  }
+]
+```
+
+Execution:
+```
+> pytest sample/test_samples.py --phone_requirements platform=Android
+```
+
+**NOTE:** Appium server need to be run separately! (`appium -a 127.0.0.1`)
