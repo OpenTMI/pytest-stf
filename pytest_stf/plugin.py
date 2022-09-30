@@ -31,7 +31,7 @@ def pytest_addoption(parser):
     )
     group.addoption(
         "--stf_allocation_timeout",
-        default=1000,
+        default=StfClient.DEFAULT_ALLOCATION_TIMEOUT_SECONDS,
         help="Maximum time in seconds after which STF releases allocated devices",
     )
     group.addoption(
@@ -103,7 +103,7 @@ def fixture_allocated_phone(pytestconfig, lockable):
     assert requirements, 'phone_requirements required'
     assert 'platform' in requirements, 'platform required'
 
-    allocation_timeout = pytestconfig.getoption('allocation_timeout') or 0
+    allocation_timeout = pytestconfig.getoption('allocation_timeout')
 
     if hasattr(pytestconfig, '_openstf'):
         stf = pytestconfig._openstf  # pylint: disable=protected-access
