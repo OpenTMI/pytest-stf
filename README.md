@@ -21,22 +21,61 @@ openstf:
   --phone_requirements=PHONE_REQUIREMENTS
                         Phone requirements
   --stf_allocation_timeout=STF_ALLOCATION_TIMEOUT
-                        Allocation timeout (how long time plugin waits for device)
+                        Maximum time in seconds after which STF releases allocated devices
+  --appium_server=APPIUM_SERVER
+                        Appium server API URL
+  --appium_capabilities=APPIUM_CAPABILITIES
+                        Appium capabilities
+  --appium_logs=APPIUM_LOGS
+                        Appium server log file path
 ```
 
+## Fixtures
 
-## Fixture `selected_phone`
+### `allocated_phone`
 
-is `session` scoped fixture that find out suitable android phone based on cli arguments, 
-prepare remote adb connection and starts appium server that tests could utilize eventually.
-
-**NOTE:** `appium` need to be installed separately! (`npm i appium`) .
+- Session scoped
+- Find and allocate a phone based on `--phone_requirements` cli argument from STF or using pytest-lockable
 
 **NOTE:** only one phone is handled by this fixture.
 
+### `phone_with_adb`
+
+- Session scoped
+- Depends on `allocated_phone`
+- Create ADB tunnel to phone if using STF
+
+**NOTE:** `Android SDK` (commandline tools, platform tools and build tools) need to be installed separately!
+
+### `appium_server`
+
+- Session scoped
+- Depends on `phone_with_adb`
+- Start Appium server or alternatively use remote one passed via `--appium_server` cli argument or `appium_server` lockable resource property
+
+**NOTE:** `appium` need to be installed separately! (`npm i appium`) .
+
+### `appium_client`
+
+- Session scoped
+- Depends on `appium_server`
+- Start Appium webdriver client
+
+### `capabilities`
+
+- Session scoped
+- Returns arguments passed to Appium webdriver
+- Tests can override this fixture in order to pass custom arguments
+
+### `appium_args`
+
+- Session scoped
+- Returns arguments passed to Appium server
+- Tests can override this fixture in order to pass custom arguments
+
 ## Usage example
 
-Test script: sample.py
+*sample.py:*
 
 ```python
 
@@ -59,7 +98,7 @@ def test_create(appium_client):
     assert url == URL, 'Wrong URL'
 ```
 
-Execution
+Execution:
 ```
 > pytest sample/test_samples.py --stf_host localhost --stf_token $TOKEN --phone_requirements platform=Android
 ```
@@ -67,7 +106,33 @@ Execution
 
 See more examples from [sample/test_samples.py](sample/test_samples.py).
 
-custom capabilities:
+Custom capabilities:
 ```
 > pytest --appium_capabilities cab=val1&cab=val2
 ```
+
+### Usage with local devices
+
+Testing with a local device you can omit `--stf_host` and `--stf_token` cli arguments and use lockable resources file (defaults to `resources.json`).
+
+`resources.json` example:
+```
+[
+  {
+    "id": "1",
+    "type": "Phone",
+    "platform": "Android",
+    "online": true,
+    "hostname": <HOSTNAME>,
+    "version": "12",
+    "appium_server": "http://localhost:4723"
+  }
+]
+```
+
+Execution:
+```
+> pytest sample/test_samples.py --phone_requirements platform=Android
+```
+
+**NOTE:** Appium server need to be run separately! (`appium -a 127.0.0.1`)
