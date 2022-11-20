@@ -21,7 +21,7 @@ def test_adb(phone_with_adb):
     adb, phone = phone_with_adb
     adb: AdbServer
     time.sleep(.5)
-    response = adb._execute('shell getprop ro.build.version.release', 10)
+    response = adb.execute('shell getprop ro.build.version.release', 10)
     assert response.stdout == phone.get('version'), 'Wrong Android version'
 
 
