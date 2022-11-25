@@ -27,7 +27,8 @@ def pytest_addoption(parser):
     )
     group.addoption(
         "--phone_requirements",
-        help="Phone requirements",
+        help="Phone requirements. required field: platform=<platform>",
+        default=os.environ.get('PHONE_REQUIREMENTS', None),
     )
     group.addoption(
         "--stf_allocation_timeout",
