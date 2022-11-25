@@ -117,7 +117,7 @@ def fixture_allocated_phone(pytestconfig, lockable):
             yield device
     else:
         with lockable.auto_lock(requirements, allocation_timeout) as device:
-            yield device
+            yield device.resource_info
 
 
 @pytest.fixture(name='phone_with_adb', scope="session")
