@@ -33,6 +33,7 @@ def pytest_addoption(parser):
     group.addoption(
         "--stf_allocation_timeout",
         default=StfClient.DEFAULT_ALLOCATION_TIMEOUT_SECONDS,
+        type=int,
         help="Maximum time in seconds after which STF releases allocated devices",
     )
     group.addoption(
