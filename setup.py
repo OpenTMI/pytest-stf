@@ -37,7 +37,7 @@ setup(
     },
     license="Mozilla Public License 2.0 (MPL 2.0)",
     keywords="py.test pytest openstf android phone",
-    python_requires=">=3.9",
+    python_requires=">=3.8",
     classifiers=[
         # "Development Status :: 5 - Production/Stable",
         "Framework :: Pytest",
@@ -51,6 +51,7 @@ setup(
         "Topic :: Utilities",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3 :: Only",
