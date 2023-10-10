@@ -41,13 +41,13 @@ jobs:
           pytest --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=pytest_stf test/ | tee pytest-coverage.txt
 
     - name: install release deps
-      if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.9'
+      if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10'
       run: |
         pip install wheel twine
         python setup.py sdist
         python setup.py bdist_wheel
     - name: upload to pypi
-      if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.9'
+      if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10'
       env:
         TWINE_USERNAME: "${{secrets.TWINE_USERNAME}}"
         TWINE_PASSWORD: "${{secrets.TWINE_PASSWORD}}"
