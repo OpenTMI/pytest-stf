@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-:copyright: (c) 2021 by Jussi Vatjus-Anttila
+:copyright: (c) 2024 by Jussi Vatjus-Anttila
 :license: MIT, see LICENSE for more details.
 """
 from setuptools import setup
@@ -22,8 +22,8 @@ setup(
     install_requires=[
         "pytest>=5.0",
         "pytest-metadata",
-        "stf-appium-client~=0.11.1",
-        "pytest-lockable>=0.10.0,<0.11.0"],
+        "stf-appium-client~=0.12.0",
+        "pytest-lockable~=0.10.0"],
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"
     # syntax, for example:
@@ -54,6 +54,8 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3 :: Only",
     ],
 )
