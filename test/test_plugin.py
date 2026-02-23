@@ -42,7 +42,11 @@ def test_plugin_stf(pytester: Pytester, example_stf):
         result = pytester.runpytest('--stf_host=.', '--stf_token=abc', '--phone_requirements=platform=Android')
 
     connect.assert_called_once_with('abc')
-    allocation_context.assert_called_once_with({'platform': 'Android'}, timeout_seconds=1000)
+    allocation_context.assert_called_once_with(
+        {'platform': 'Android'},
+        wait_timeout=mock.ANY,
+        timeout_seconds=mock.ANY,
+        avoid_list=None)
     adb_start.assert_called_once_with()
     appium_server_start.assert_called_once_with()
     appium_server_stop.assert_called_once_with()
@@ -50,6 +54,33 @@ def test_plugin_stf(pytester: Pytester, example_stf):
     appium_client_stop.assert_called_once_with()
 
     # check that all test passed
+    result.assert_outcomes(passed=1)
+
+
+def test_plugin_stf_with_avoid_devices(pytester: Pytester, example_stf):
+    """Make sure --stf_avoid_devices is parsed and passed to allocation_context"""
+    with mock.patch('stf_appium_client.StfClient.StfClient.connect'), \
+         mock.patch('stf_appium_client.StfClient.StfClient.allocation_context') as allocation_context, \
+         mock.patch('stf_appium_client.AdbServer.AdbServer.connect'), \
+         mock.patch('stf_appium_client.AppiumServer.AppiumServer.start'), \
+         mock.patch('stf_appium_client.AppiumServer.AppiumServer.stop'), \
+         mock.patch('stf_appium_client.AppiumServer.AppiumServer.get_api_path'), \
+         mock.patch('stf_appium_client.AppiumClient.AppiumClient.start'), \
+         mock.patch('stf_appium_client.AppiumClient.AppiumClient.stop'):
+
+        allocation_context.return_value.__enter__.return_value = {
+            "platform": "Android",
+            "remote_adb_url": "localhost"}
+        result = pytester.runpytest(
+            '--stf_host=.', '--stf_token=abc',
+            '--phone_requirements=platform=Android',
+            '--stf_avoid_devices=ABC123,DEF456')
+
+    allocation_context.assert_called_once_with(
+        {'platform': 'Android'},
+        wait_timeout=mock.ANY,
+        timeout_seconds=mock.ANY,
+        avoid_list=['ABC123', 'DEF456'])
     result.assert_outcomes(passed=1)
 
 
@@ -61,9 +92,9 @@ def test_plugin_local(pytester: Pytester, example_local):
          mock.patch('stf_appium_client.AppiumClient.AppiumClient.start') as appium_client_start, \
          mock.patch('stf_appium_client.AppiumClient.AppiumClient.stop') as appium_client_stop:
 
-        auto_lock.return_value.__enter__.return_value = {
-            "platform": "Android"
-        }
+        auto_lock.return_value.__enter__.return_value = mock.Mock(
+            resource_info={"platform": "Android"}
+        )
         result = pytester.runpytest('--phone_requirements=platform=Android')
         print(result)
 

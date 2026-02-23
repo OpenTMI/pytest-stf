@@ -119,8 +119,9 @@ def fixture_allocated_phone(pytestconfig, lockable):
         requirements = parse_requirements(requirements)
 
         avoid_devices_raw = pytestconfig.getoption('stf_avoid_devices')
-        avoid_list = [s.strip() for s in avoid_devices_raw.split(',') if s.strip()] \
-            if avoid_devices_raw else None
+        avoid_list = None
+        if avoid_devices_raw:
+            avoid_list = [s.strip() for s in avoid_devices_raw.split(',') if s.strip()]
 
         with stf.allocation_context(requirements,
                                     wait_timeout=allocation_timeout,
