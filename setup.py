@@ -22,7 +22,7 @@ setup(
     install_requires=[
         "pytest>=5.0",
         "pytest-metadata",
-        "stf-appium-client~=0.12.0",
+        "stf-appium-client @ git+https://github.com/kimikorento-o/stf-appium-python-client.git@44fec0f88626242c3538f482b7edbf9d5860f2f7",
         "pytest-lockable~=0.11.0"],
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"

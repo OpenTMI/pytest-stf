@@ -49,6 +49,11 @@ def pytest_addoption(parser):
         "--appium_logs",
         help="Appium server log file path"
     )
+    group.addoption(
+        "--stf_avoid_devices",
+        default=os.environ.get('STF_AVOID_DEVICES', None),
+        help="Comma-separated list of device serials to deprioritize during allocation",
+    )
 
 
 def pytest_configure(config):
@@ -113,9 +118,15 @@ def fixture_allocated_phone(pytestconfig, lockable):
         timeout = pytestconfig.getoption('stf_allocation_timeout')
         requirements = parse_requirements(requirements)
 
+        avoid_devices_raw = pytestconfig.getoption('stf_avoid_devices')
+        avoid_list = None
+        if avoid_devices_raw:
+            avoid_list = [s.strip() for s in avoid_devices_raw.split(',') if s.strip()]
+
         with stf.allocation_context(requirements,
                                     wait_timeout=allocation_timeout,
-                                    timeout_seconds=timeout) as device:
+                                    timeout_seconds=timeout,
+                                    avoid_list=avoid_list) as device:
             yield device
     else:
         with lockable.auto_lock(requirements, allocation_timeout) as device:
